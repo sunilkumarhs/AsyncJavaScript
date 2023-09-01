@@ -3,8 +3,6 @@
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
 
-///////////////////////////////////////
-
 const requestCountry = (data, className = '') => {
   const html = `<article class="country ${className}">
 <img class="country__img" src=${data.flag} />
@@ -20,8 +18,16 @@ const requestCountry = (data, className = '') => {
 </article>`;
 
   countriesContainer.insertAdjacentHTML('beforeend', html);
-  countriesContainer.style.opacity = 1;
+  // countriesContainer.style.opacity = 1;
+  btn.style.opacity = 0;
 };
+
+const renderError = msg => {
+  countriesContainer.insertAdjacentText('beforeend', msg);
+  // countriesContainer.style.opacity = 1;
+};
+
+///////////////////////////////////////
 
 // const requestCountryandNeighbour = country => {
 //   const request1 = new XMLHttpRequest();
@@ -55,20 +61,53 @@ const requestCountry = (data, className = '') => {
 
 // requestCountryandNeighbour('ind');
 
+const getReaponse = (url, errMsg = 'Something went wrong!') => {
+  return fetch(url).then(response => {
+    console.log(response);
+
+    if (!response.ok) throw new Error(`${errMsg} (${response.status})`);
+
+    return response.json();
+  });
+};
+
 const requestCountryPromises = country => {
-  fetch(`https://restcountries.com/v2/alpha/${country}`)
-    .then(response => response.json())
+  getReaponse(
+    `https://restcountries.com/v2/alpha/${country}`,
+    'Country Not Found!'
+  )
     .then(data => {
       requestCountry(data);
-      const [...neighbours] = data.borders;
-      if (!neighbours) return;
+      const test = data.borders;
 
+      if (!test) throw new Error('Neighbour Country Not Found!');
+
+      const [...neighbours] = data.borders;
+
+      // const neighbours = data.borders;
+
+      // return getReaponse(
+      //   `https://restcountries.com/v2/alpha/${neighbours}`,
+      //   'Neighbour Country Not Found!'
+      // );
       neighbours.forEach(neighbour => {
-        fetch(`https://restcountries.com/v2/alpha/${neighbour}`)
-          .then(response => response.json())
-          .then(data => requestCountry(data, 'neighbour'));
+        getReaponse(
+          `https://restcountries.com/v2/alpha/${neighbour}`,
+          'Neighbour Country Not Found!'
+        ).then(data => requestCountry(data, 'neighbour'));
       });
+    })
+    .catch(err => {
+      console.error(`${err} 💥💥💥`);
+      renderError(`Something went wrong 💥💥 ${err.message}. Try Again! `);
+    })
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
     });
 };
 
-requestCountryPromises('ind');
+btn.addEventListener('click', function () {
+  requestCountryPromises('ind');
+});
+
+requestCountryPromises('aus');

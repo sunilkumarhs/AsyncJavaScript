@@ -106,6 +106,7 @@ body {
   color: white;
   background-color: orangered;
   cursor: pointer;
+  opacity: 1;
 }
 
 .images {
