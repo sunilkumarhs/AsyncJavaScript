@@ -2,6 +2,7 @@
 
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
+const imageContainer = document.querySelector('.images');
 
 const requestCountry = (data, className = '') => {
   const html = `<article class="country ${className}">
@@ -29,7 +30,7 @@ const renderError = msg => {
 
 const getReaponse = (url, errMsg = 'Something went wrong!') => {
   return fetch(url).then(response => {
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) throw new Error(`${errMsg} (${response.status})`);
 
@@ -83,7 +84,6 @@ const requestCountryPromises = country => {
       } else {
         val = data[0];
       }
-      console.log(val);
       requestCountry(val);
       const test = val.borders;
 
@@ -113,9 +113,9 @@ const requestCountryPromises = country => {
     });
 };
 
-btn.addEventListener('click', function () {
-  requestCountryPromises('india');
-});
+// btn.addEventListener('click', function () {
+//   requestCountryPromises('india');
+// });
 
 // requestCountryPromises('aus');
 
@@ -146,9 +146,9 @@ TEST COORDINATES 2: -33.933, 18.474
 
 GOOD LUCK 😀
 */
+
 const toJSON = url => {
   return fetch(url).then(resp => {
-    console.log(resp);
     return resp.json();
   });
 };
@@ -163,7 +163,7 @@ const whereAmI = (lat, lng) => {
       if (!region || !country) throw new Error('Data Not Found!');
       console.log(`You are in ${region}, ${country}`);
       const nat = country.toLowerCase();
-      requestCountryPromises(nat);
+      // requestCountryPromises(nat);
     })
     .catch(err => {
       console.log(err);
@@ -171,6 +171,167 @@ const whereAmI = (lat, lng) => {
     });
 };
 
-whereAmI(19.037, 72.873);
+// whereAmI(19.037, 72.873);
 // whereAmI(52.508, 13.381);
 // whereAmI(-33.933, 18.474);
+
+///////////////////////////////////////////////
+//building the simple promise
+const loterryPromise = new Promise(function (resolve, reject) {
+  setTimeout(function () {
+    if (Math.random() <= 0.5) {
+      resolve('You have won 🎉');
+    } else {
+      reject(new Error('You have lost, better luck next time 💔'));
+    }
+  }, 2000);
+});
+
+loterryPromise.then(res => console.log(res)).catch(err => console.error(err));
+
+// //promisifying setTimeout
+const wiat = seconds => {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, seconds * 1000);
+  });
+};
+
+wiat(1)
+  .then(() => {
+    console.log('1 second passed');
+    return wiat(1);
+  })
+  .then(() => {
+    console.log('2 second passed');
+    return wiat(1);
+  })
+  .then(() => {
+    console.log('3 second passed');
+    return wiat(1);
+  })
+  .then(() => {
+    console.log('4 second passed');
+    return wiat(1);
+  })
+  .then(() => {
+    console.log('5 second passed');
+    return wiat(1);
+  });
+
+//////////////////////////////////////////////
+//instant execueting promise
+/*
+Promise.resolve('abc').then(res => console.log(res));
+Promise.reject(new Error('error has occured!')).catch(err =>
+  console.error(err)
+);
+*/
+
+//Promisifying Geolocation API
+
+const getPosition = () => {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+getPosition().then(pos => console.log(pos));
+
+const whereIAm = () => {
+  getPosition()
+    .then(pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      return fetch(
+        `https://geocode.xyz/${lat},${lng}?geoit=json&auth=372291038963244980266x8087`
+      );
+    })
+    .then(response => {
+      if (!response.ok)
+        throw new Error(`Problem with geocoding ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      console.log(data);
+      const region = data.region;
+      const country = data.country;
+      if (!region || !country) throw new Error('Data Not Found!');
+      console.log(`You are in ${region}, ${country}`);
+      const nat = country.toLowerCase();
+      requestCountryPromises(nat);
+    })
+    .catch(err => {
+      console.error(err);
+      console.error(
+        new Error(`Something went wrong 💥💥 ${err.message}. Try Again! `)
+      );
+    });
+};
+
+btn.addEventListener('click', whereIAm);
+
+///////////////////////////////////////
+// Coding Challenge #2
+
+/* 
+Build the image loading functionality that I just showed you on the screen.
+
+Tasks are not super-descriptive this time, so that you can figure out some stuff on your own. Pretend you're working on your own 😉
+
+PART 1
+1. Create a function 'createImage' which receives imgPath as an input. This function returns a promise which creates a new image (use document.createElement('img')) and sets the .src attribute to the provided image path. When the image is done loading, append it to the DOM element with the 'images' class, and resolve the promise. The fulfilled value should be the image element itself. In case there is an error loading the image ('error' event), reject the promise.
+
+If this part is too tricky for you, just watch the first part of the solution.
+
+PART 2
+2. Comsume the promise using .then and also add an error handler;
+3. After the image has loaded, pause execution for 2 seconds using the wait function we created earlier;
+4. After the 2 seconds have passed, hide the current image (set display to 'none'), and load a second image (HINT: Use the image element returned by the createImage promise to hide the current image. You will need a global variable for that 😉);
+5. After the second image has loaded, pause execution for 2 seconds again;
+6. After the 2 seconds have passed, hide the current image.
+
+TEST DATA: Images in the img folder. Test the error handler by passing a wrong image path. Set the network speed to 'Fast 3G' in the dev tools Network tab, otherwise images load too fast.
+
+GOOD LUCK 😀
+*/
+// const wiat = seconds => {
+//   return new Promise(function (resolve) {
+//     setTimeout(resolve, seconds * 1000);
+//   });
+// };
+let image;
+const createImage = path => {
+  return new Promise(function (resolve, reject) {
+    image = document.createElement('img');
+    image.src = path;
+    image.onerror = () => {
+      reject('Error occured in loading the image!');
+    };
+    image.onload = () => {
+      image.style.display = 'block';
+      resolve(imageContainer.insertAdjacentElement('afterbegin', image));
+    };
+  });
+};
+
+createImage('img/img-1.jpg')
+  .then(() => {
+    return wiat(2);
+  })
+  .then(() => {
+    image.style.display = 'none';
+    return createImage('img/img-2.jpg');
+  })
+  .then(() => {
+    return wiat(2);
+  })
+  .then(() => {
+    image.style.display = 'none';
+    return createImage('img/img-3.jpg');
+  })
+  .then(() => {
+    return wiat(2);
+  })
+  .catch(err => {
+    console.error(new Error(err));
+    imageContainer.insertAdjacentText('afterbegin', err);
+  });
