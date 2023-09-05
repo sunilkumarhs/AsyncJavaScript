@@ -19,7 +19,7 @@ const requestCountry = (data, className = '') => {
 </article>`;
 
   countriesContainer.insertAdjacentHTML('beforeend', html);
-  // countriesContainer.style.opacity = 1;
+  countriesContainer.style.opacity = 1;
   btn.style.opacity = 0;
 };
 
@@ -28,7 +28,7 @@ const renderError = msg => {
   // countriesContainer.style.opacity = 1;
 };
 
-const getReaponse = (url, errMsg = 'Something went wrong!') => {
+const getJsonReaponse = (url, errMsg = 'Something went wrong!') => {
   return fetch(url).then(response => {
     // console.log(response);
 
@@ -73,7 +73,7 @@ const getReaponse = (url, errMsg = 'Something went wrong!') => {
 // requestCountryandNeighbour('ind');
 
 const requestCountryPromises = country => {
-  getReaponse(
+  getJsonReaponse(
     `https://restcountries.com/v2/name/${country}`,
     'Country Not Found!'
   )
@@ -98,7 +98,7 @@ const requestCountryPromises = country => {
       //   'Neighbour Country Not Found!'
       // );
       neighbours.forEach(neighbour => {
-        getReaponse(
+        getJsonReaponse(
           `https://restcountries.com/v2/alpha/${neighbour}`,
           'Neighbour Country Not Found!'
         ).then(data => requestCountry(data, 'neighbour'));
@@ -177,17 +177,17 @@ const whereAmI = (lat, lng) => {
 
 ///////////////////////////////////////////////
 //building the simple promise
-const loterryPromise = new Promise(function (resolve, reject) {
-  setTimeout(function () {
-    if (Math.random() <= 0.5) {
-      resolve('You have won 🎉');
-    } else {
-      reject(new Error('You have lost, better luck next time 💔'));
-    }
-  }, 2000);
-});
+// const loterryPromise = new Promise(function (resolve, reject) {
+//   setTimeout(function () {
+//     if (Math.random() <= 0.5) {
+//       resolve('You have won 🎉');
+//     } else {
+//       reject(new Error('You have lost, better luck next time 💔'));
+//     }
+//   }, 2000);
+// });
 
-loterryPromise.then(res => console.log(res)).catch(err => console.error(err));
+// loterryPromise.then(res => console.log(res)).catch(err => console.error(err));
 
 // //promisifying setTimeout
 const wiat = seconds => {
@@ -196,27 +196,27 @@ const wiat = seconds => {
   });
 };
 
-wiat(1)
-  .then(() => {
-    console.log('1 second passed');
-    return wiat(1);
-  })
-  .then(() => {
-    console.log('2 second passed');
-    return wiat(1);
-  })
-  .then(() => {
-    console.log('3 second passed');
-    return wiat(1);
-  })
-  .then(() => {
-    console.log('4 second passed');
-    return wiat(1);
-  })
-  .then(() => {
-    console.log('5 second passed');
-    return wiat(1);
-  });
+// wiat(1)
+//   .then(() => {
+//     console.log('1 second passed');
+//     return wiat(1);
+//   })
+//   .then(() => {
+//     console.log('2 second passed');
+//     return wiat(1);
+//   })
+//   .then(() => {
+//     console.log('3 second passed');
+//     return wiat(1);
+//   })
+//   .then(() => {
+//     console.log('4 second passed');
+//     return wiat(1);
+//   })
+//   .then(() => {
+//     console.log('5 second passed');
+//     return wiat(1);
+//   });
 
 //////////////////////////////////////////////
 //instant execueting promise
@@ -335,3 +335,123 @@ createImage('img/img-1.jpg')
     console.error(new Error(err));
     imageContainer.insertAdjacentText('afterbegin', err);
   });
+
+//////////////////////////////////////////////////////////////////////
+// async and await methods
+
+const myLocation = async () => {
+  try {
+    const pos = await getPosition();
+    const { latitude: lat, longitude: lng } = pos.coords;
+
+    const resp = await fetch(
+      `https://geocode.xyz/${lat},${lng}?geoit=json&auth=372291038963244980266x8087`
+    );
+    if (!resp.ok) throw new Error('Geolocation could not found!');
+    const posData = await resp.json();
+
+    const location = await fetch(
+      `https://restcountries.com/v2/name/${posData.country}`
+    );
+    if (!location.ok) throw new Error('Country could not found!');
+    const country = await location.json();
+    requestCountry(country[1]);
+    return `You are in ${posData.city} city, ${posData.country}`;
+  } catch (err) {
+    console.error(`💥 ${err}`);
+    renderError(`💥 ${err.message}`);
+    throw err;
+  }
+};
+// console.log('1: Fetching the Geolocation.');
+// (async function () {
+//   try {
+//     const city = await myLocation();
+//     console.log(`2: ${city}`);
+//   } catch (err) {
+//     console.error(`2: ${err}`);
+//   }
+//   console.log('3: Finished the fetching Gealocation.');
+//   // } finally {
+//   //   console.log('3: Finished the fetching Gealocation.');
+//   // }
+// })(myLocation);
+
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    // const [data1] = await getJsonReaponse(
+    //   `https://restcountries.com/v2/name/${c1}`
+    // );
+    // const [data2] = await getJsonReaponse(
+    //   `https://restcountries.com/v2/name/${c2}`
+    // );
+    // const [data3] = await getJsonReaponse(
+    //   `https://restcountries.com/v2/name/${c3}`
+    // );
+    // console.log([data1.capital, data2.capital, data3.capital]);
+
+    const data = await Promise.all([
+      getJsonReaponse(`https://restcountries.com/v2/name/${c1}`),
+      getJsonReaponse(`https://restcountries.com/v2/name/${c2}`),
+      getJsonReaponse(`https://restcountries.com/v2/name/${c3}`),
+    ]);
+    console.log(data.map(cp => cp[0].capital));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// get3Countries('sri lanka', 'nepal', 'bhutan');
+// promise.race
+// (async function () {
+//   try {
+//     const data = await Promise.race([
+//       getJsonReaponse(`https://restcountries.com/v2/name/sri lanka`),
+//       getJsonReaponse(`https://restcountries.com/v2/name/nepal`),
+//       getJsonReaponse(`https://restcountries.com/v2/name/bhutan`),
+//     ]);
+//     console.log(data[0]);
+//   } catch (err) {
+//     console.error(err);
+//   }
+// })();
+
+//timeout poromise
+const timeout = async function (sec) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error('Request took to long!'));
+    }, sec * 1000);
+  });
+};
+
+Promise.race([
+  getJsonReaponse(`https://restcountries.com/v2/name/sri lanka`),
+  timeout(0.5),
+])
+  .then(res => console.log(res[0]))
+  .catch(err => console.error(err));
+
+//promise allsetled
+Promise.allSettled([
+  Promise.resolve('Success'),
+  Promise.reject('Error'),
+  Promise.resolve('Success'),
+]).then(resp => console.log(resp));
+
+// Promise.all([
+//   Promise.resolve('Success'),
+//   Promise.reject('Error'),
+//   Promise.resolve('Success'),
+// ])
+//   .then(resp => console.log(resp))
+//   .catch(err => console.error(err));
+
+// promise.any
+Promise.any([
+  Promise.resolve('Success'),
+  Promise.reject('Error'),
+  Promise.resolve('Success'),
+])
+  .then(resp => console.log(resp))
+  .catch(err => console.error(err));
