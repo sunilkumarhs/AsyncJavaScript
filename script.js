@@ -298,10 +298,9 @@ GOOD LUCK 😀
 //     setTimeout(resolve, seconds * 1000);
 //   });
 // };
-let image;
 const createImage = path => {
   return new Promise(function (resolve, reject) {
-    image = document.createElement('img');
+    const image = document.createElement('img');
     image.src = path;
     image.onerror = () => {
       reject('Error occured in loading the image!');
@@ -313,28 +312,28 @@ const createImage = path => {
   });
 };
 
-createImage('img/img-1.jpg')
-  .then(() => {
-    return wiat(2);
-  })
-  .then(() => {
-    image.style.display = 'none';
-    return createImage('img/img-2.jpg');
-  })
-  .then(() => {
-    return wiat(2);
-  })
-  .then(() => {
-    image.style.display = 'none';
-    return createImage('img/img-3.jpg');
-  })
-  .then(() => {
-    return wiat(2);
-  })
-  .catch(err => {
-    console.error(new Error(err));
-    imageContainer.insertAdjacentText('afterbegin', err);
-  });
+// createImage('img/img-1.jpg')
+//   .then(() => {
+//     return wiat(2);
+//   })
+//   .then(() => {
+//     image.style.display = 'none';
+//     return createImage('img/img-2.jpg');
+//   })
+//   .then(() => {
+//     return wiat(2);
+//   })
+//   .then(() => {
+//     image.style.display = 'none';
+//     return createImage('img/img-3.jpg');
+//   })
+//   .then(() => {
+//     return wiat(2);
+//   })
+//   .catch(err => {
+//     console.error(new Error(err));
+//     imageContainer.insertAdjacentText('afterbegin', err);
+//   });
 
 //////////////////////////////////////////////////////////////////////
 // async and await methods
@@ -417,27 +416,27 @@ const get3Countries = async function (c1, c2, c3) {
 // })();
 
 //timeout poromise
-const timeout = async function (sec) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error('Request took to long!'));
-    }, sec * 1000);
-  });
-};
+// const timeout = async function (sec) {
+//   return new Promise(function (_, reject) {
+//     setTimeout(function () {
+//       reject(new Error('Request took to long!'));
+//     }, sec * 1000);
+//   });
+// };
 
-Promise.race([
-  getJsonReaponse(`https://restcountries.com/v2/name/sri lanka`),
-  timeout(0.5),
-])
-  .then(res => console.log(res[0]))
-  .catch(err => console.error(err));
+// Promise.race([
+//   getJsonReaponse(`https://restcountries.com/v2/name/sri lanka`),
+//   timeout(0.5),
+// ])
+//   .then(res => console.log(res[0]))
+//   .catch(err => console.error(err));
 
 //promise allsetled
-Promise.allSettled([
-  Promise.resolve('Success'),
-  Promise.reject('Error'),
-  Promise.resolve('Success'),
-]).then(resp => console.log(resp));
+// Promise.allSettled([
+//   Promise.resolve('Success'),
+//   Promise.reject('Error'),
+//   Promise.resolve('Success'),
+// ]).then(resp => console.log(resp));
 
 // Promise.all([
 //   Promise.resolve('Success'),
@@ -448,10 +447,99 @@ Promise.allSettled([
 //   .catch(err => console.error(err));
 
 // promise.any
-Promise.any([
-  Promise.resolve('Success'),
-  Promise.reject('Error'),
-  Promise.resolve('Success'),
-])
-  .then(resp => console.log(resp))
-  .catch(err => console.error(err));
+// Promise.any([
+//   Promise.resolve('Success'),
+//   Promise.reject('Error'),
+//   Promise.resolve('Success'),
+// ])
+//   .then(resp => console.log(resp))
+//   .catch(err => console.error(err));
+
+///////////////////////////////////////
+// Coding Challenge #3
+
+/* 
+PART 1
+Write an async function 'loadNPause' that recreates Coding Challenge #2, this time using async/await (only the part where the promise is consumed). Compare the two versions, think about the big differences, and see which one you like more.
+Don't forget to test the error handler, and to set the network speed to 'Fast 3G' in the dev tools Network tab.
+
+PART 2
+1. Create an async function 'loadAll' that receives an array of image paths 'imgArr';
+2. Use .map to loop over the array, to load all the images with the 'createImage' function (call the resulting array 'imgs')
+3. Check out the 'imgs' array in the console! Is it like you expected?
+4. Use a promise combinator function to actually get the images from the array 😉
+5. Add the 'paralell' class to all the images (it has some CSS styles).
+
+TEST DATA: ['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']. To test, turn off the 'loadNPause' function.
+
+GOOD LUCK 😀
+*/
+
+// const createImage = path => {
+//   return new Promise(function (resolve, reject) {
+//     const image = document.createElement('img');
+//     image.src = path;
+//     image.onerror = () => {
+//       reject('Error occured in loading the image!');
+//     };
+//     image.onload = () => {
+//       image.style.display = 'block';
+//       resolve(imageContainer.insertAdjacentElement('afterbegin', image));
+//     };
+//   });
+// };
+
+// createImage('img/img-1.jpg')
+//   .then(() => {
+//     return wiat(2);
+//   })
+//   .then(() => {
+//     image.style.display = 'none';
+//     return createImage('img/img-2.jpg');
+//   })
+//   .then(() => {
+//     return wiat(2);
+//   })
+//   .then(() => {
+//     image.style.display = 'none';
+//     return createImage('img/img-3.jpg');
+//   })
+//   .then(() => {
+//     return wiat(2);
+//   })
+
+const pause = (seconds,image) => {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      resolve((image.style.display = 'none'));
+    }, seconds * 1000);
+  });
+};
+
+const loadNPause = async function () {
+  try {
+    let img = await createImage('img/img-1.jpg');
+    await pause(5,img);
+    img = await createImage('img/img-2.jpg');
+    await pause(5,img);
+    img = await createImage('img/img-3.jpg');
+  } catch (err) {
+    console.error(new Error(err));
+    imageContainer.insertAdjacentText('afterbegin', err);
+  }
+};
+
+// loadNPause();
+
+const loadAll = async function (imgArr) {
+  try {
+    const imgs = imgArr.map(async imgp => await createImage(imgp));
+    const imgEl = await Promise.all(imgs);
+    console.log(imgEl);
+    imgEl.forEach(img => img.classList.add('parallel'));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+loadAll(['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']);
